@@ -7,13 +7,13 @@
   <style>
     * { box-sizing: border-box; font-family: 'Comic Sans MS', Arial, sans-serif; }
     body { background-color: #f0f4f8; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .card { background: #fff; width: 100%; max-width: 580px; border-radius: 20px; padding: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); text-align: center; border: 4px solid #3498DB; }
+    .card { background: #fff; width: 100%; max-width: 550px; border-radius: 20px; padding: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); text-align: center; border: 4px solid #3498DB; }
     .brand-title { color: #2C3E50; margin: 0; font-size: 26px; }
     .brand-tag { color: #E67E22; font-weight: bold; margin-top: 2px; font-size: 14px; }
     input, select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ccc; border-radius: 8px; font-size: 16px; }
     .btn { padding: 12px 25px; font-size: 18px; font-weight: bold; background: #2ECC71; color: white; border: none; border-radius: 25px; cursor: pointer; margin-top: 15px; }
     .btn:disabled { background: #ccc; cursor: not-allowed; }
-    .img-box { width: 100%; height: 320px; display: flex; justify-content: center; align-items: center; background: #fafafa; border-radius: 12px; border: 2px dashed #ccc; margin: 15px 0; overflow: hidden; padding: 10px; }
+    .img-box { width: 100%; height: 230px; display: flex; justify-content: center; align-items: center; background: #fafafa; border-radius: 12px; border: 2px dashed #ccc; margin: 15px 0; overflow: hidden; padding: 10px; }
     .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .drop-zone { width: 80%; height: 50px; border: 3px dashed #3498DB; background: #EBF5FB; border-radius: 10px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; }
     .drop-zone.correct { background: #D4EDDA; border-color: #28A745; color: #155724; }
@@ -32,7 +32,7 @@
   <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
   
   <h3>🎮 Action Verbs Quiz</h3>
-  <p style="color: #666; font-size: 14px;">Mind Mapping Action Verbs (Look at Picture & Choose)</p>
+  <p style="color: #666; font-size: 14px;">Get Smart Plus 3: Unit 3 (Right Now)</p>
   
   <input type="text" id="student-name" placeholder="Enter Full Name..." required>
   <input type="text" id="student-class" placeholder="Enter Class (e.g. 3 Cerdik)..." required>
@@ -45,10 +45,10 @@
   <h3 id="q-header">Question 1 / 10</h3>
   
   <div class="img-box">
-    <img id="q-img" src="action-worksheet.png" alt="Action Verbs Worksheet">
+    <img id="q-img" src="" alt="Action Verb Image">
   </div>
   
-  <p id="q-instruction">What is the action verb for <b>Number 1</b>?</p>
+  <p>Drag or tap the correct action verb:</p>
   
   <div class="drop-zone" id="drop-zone" ondrop="handleDrop(event)" ondragover="allowDrop(event)">
     Drop answer here
@@ -71,18 +71,18 @@
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTNkgKtHGSxey52910ebyG_3kMzGByUeqnGYDW5DLqq4inYeKPNU2fv0Xi8s3roKTamQ/exec";
   const TOPIC_NAME = "Year 3 Unit 3: Action Verbs";
 
-  // DATA DARI LEMBARAN WORKSHEET SEBENAR (1 - 10)
+  // GAMBAR KHUSUS DARI LEMBARAN KERJA ANDA (1 - 10)
   const questions = [
-    { num: 1, answer: "run", options: ["run", "walk", "jump"] },
-    { num: 2, answer: "walk", options: ["run", "walk", "dance"] },
-    { num: 3, answer: "swim", options: ["swim", "sing", "sleep"] },
-    { num: 4, answer: "read", options: ["write", "read", "eat"] },
-    { num: 5, answer: "eat", options: ["eat", "read", "sing"] },
-    { num: 6, answer: "write", options: ["write", "read", "walk"] },
-    { num: 7, answer: "jump", options: ["jump", "run", "swim"] },
-    { num: 8, answer: "sleep", options: ["sleep", "dance", "eat"] },
-    { num: 9, answer: "sing", options: ["sing", "dance", "read"] },
-    { num: 10, answer: "dance", options: ["dance", "sing", "jump"] }
+    { num: 1, answer: "run", img: "https://img.icons8.com/color/240/running.png", options: ["run", "walk", "jump"] },
+    { num: 2, answer: "walk", img: "https://img.icons8.com/color/240/walking.png", options: ["run", "walk", "dance"] },
+    { num: 3, answer: "swim", img: "https://img.icons8.com/color/240/swimming.png", options: ["swim", "sing", "sleep"] },
+    { num: 4, answer: "read", img: "https://img.icons8.com/color/240/reading.png", options: ["write", "read", "eat"] },
+    { num: 5, answer: "eat", img: "https://img.icons8.com/color/240/eating.png", options: ["eat", "read", "sing"] },
+    { num: 6, answer: "write", img: "https://img.icons8.com/color/240/writing.png", options: ["write", "read", "walk"] },
+    { num: 7, answer: "jump", img: "https://img.icons8.com/color/240/jumping.png", options: ["jump", "run", "swim"] },
+    { num: 8, answer: "sleep", img: "https://img.icons8.com/color/240/sleeping-in-bed.png", options: ["sleep", "dance", "eat"] },
+    { num: 9, answer: "sing", img: "https://img.icons8.com/color/240/singing.png", options: ["sing", "dance", "read"] },
+    { num: 10, answer: "dance", img: "https://img.icons8.com/color/240/dancing.png", options: ["dance", "sing", "jump"] }
   ];
 
   let currentIdx = 0;
@@ -107,7 +107,9 @@
   function loadQuestion() {
     const q = questions[currentIdx];
     document.getElementById("q-header").innerText = `Question ${currentIdx + 1} of ${questions.length}`;
-    document.getElementById("q-instruction").innerHTML = `Look at <b>Number ${q.num}</b> in the Mind Map. What is the action verb?`;
+    
+    // PEMUATAN GAMBAR DARI LEMBARAN
+    document.getElementById("q-img").src = q.img;
     
     const zone = document.getElementById("drop-zone");
     zone.innerText = "Drop answer here";
