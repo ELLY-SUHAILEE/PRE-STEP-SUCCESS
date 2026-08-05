@@ -107,28 +107,63 @@
       });
   }
 
-  function cleanScore(scoreVal) {
-    if (!scoreVal) return "-";
-    let str = String(scoreVal).trim();
-    
-    // Jika data mengandungi tanda '/' seperti '8/10'
-    if (str.includes('/')) {
-      const parts = str.split('/');
+  // PENGECAM DATA PINTAR: Memastikan tarikh/tahun tidak dibaca sebagai score
+  function extractCorrectData(row) {
+    const vals = Object.values(row).map(v => String(v).trim());
+
+    let dateVal = "-";
+    let nameVal = "-";
+    let classVal = "-";
+    let topicVal = "-";
+    let scoreVal = "-";
+
+    // 1. Mengesan Tarikh
+    for (let v of vals) {
+      if (v.includes("T") || (v.includes("-") && v.length >= 10) || (v.includes("/") && v.length > 10)) {
+        const d = new Date(v);
+        if (!isNaN(d.getTime())) {
+          dateVal = d.toLocaleString("en-GB");
+          break;
+        }
+      }
+    }
+
+    // 2. Mengesan Score sebenar (Format x/10 atau peratus %)
+    for (let v of vals) {
+      if (v.includes("/") && v.length <= 15 && !v.includes("T") && !v.includes("-")) {
+        scoreVal = v;
+        break;
+      }
+      if (v.includes("%") && !v.includes("2026")) {
+        scoreVal = v;
+        break;
+      }
+    }
+
+    // Backup jika menggunakan kunci khusus dari Google Apps Script
+    if (scoreVal === "-") scoreVal = row.score || row.Score || "-";
+    if (dateVal === "-") {
+      const rawD = row.timestamp || row.Timestamp || vals[0] || "";
+      const d = new Date(rawD);
+      dateVal = !isNaN(d.getTime()) ? d.toLocaleString("en-GB") : rawD;
+    }
+
+    nameVal = row.studentName || row.studentname || row.StudentName || vals[1] || "-";
+    classVal = row.className || row.classname || row.Class || vals[2] || "-";
+    topicVal = row.topic || row.Topic || vals[3] || "-";
+
+    // Format kan Score jika belum ada %
+    if (scoreVal !== "-" && scoreVal.includes("/") && !scoreVal.includes("%")) {
+      const parts = scoreVal.split("/");
       const num = parseFloat(parts[0]);
       const den = parseFloat(parts[1]);
       if (!isNaN(num) && !isNaN(den) && den > 0) {
         const pct = Math.round((num / den) * 100);
-        return `${num}/${den} (${pct}%)`;
+        scoreVal = `${num}/${den} (${pct}%)`;
       }
     }
-    
-    // Jika data nombor peratus biasa
-    const val = parseFloat(str);
-    if (!isNaN(val)) {
-      return `${val}%`;
-    }
 
-    return str;
+    return { dateVal, nameVal, classVal, topicVal, scoreVal };
   }
 
   function renderTable(records) {
@@ -141,28 +176,15 @@
     }
 
     records.forEach(r => {
-      // Ambil nilai mengikut kunci atau indeks
-      const vals = Object.values(r);
-      
-      const rawDate = r.timestamp || r.Timestamp || r.dateTime || vals[0] || "";
-      let dateFormatted = "-";
-      if(rawDate) {
-        const d = new Date(rawDate);
-        dateFormatted = !isNaN(d.getTime()) ? d.toLocaleString("en-GB") : rawDate;
-      }
-
-      const name = r.studentName || r.studentname || r.StudentName || vals[1] || "-";
-      const cls = r.className || r.classname || r.Class || vals[2] || "-";
-      const topic = r.topic || r.Topic || vals[3] || "-";
-      const score = cleanScore(r.score || r.Score || vals[4]);
+      const item = extractCorrectData(r);
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${dateFormatted}</td>
-        <td><b>${name}</b></td>
-        <td>${cls}</td>
-        <td>${topic}</td>
-        <td><span class="badge-score">${score}</span></td>
+        <td>${item.dateVal}</td>
+        <td><b>${item.nameVal}</b></td>
+        <td>${item.classVal}</td>
+        <td>${item.topicVal}</td>
+        <td><span class="badge-score">${item.scoreVal}</span></td>
       `;
       tbody.appendChild(tr);
     });
@@ -171,11 +193,10 @@
   function filterData() {
     const query = document.getElementById("search-input").value.toLowerCase();
     const filtered = allRecords.filter(r => {
-      const vals = Object.values(r);
-      const name = String(r.studentName || r.studentname || vals[1] || "").toLowerCase();
-      const cls = String(r.className || r.classname || vals[2] || "").toLowerCase();
-      const topic = String(r.topic || r.Topic || vals[3] || "").toLowerCase();
-      return name.includes(query) || cls.includes(query) || topic.includes(query);
+      const item = extractCorrectData(r);
+      return item.nameVal.toLowerCase().includes(query) || 
+             item.classVal.toLowerCase().includes(query) || 
+             item.topicVal.toLowerCase().includes(query);
     });
     renderTable(filtered);
   }
