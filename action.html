@@ -13,8 +13,23 @@
     input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ccc; border-radius: 8px; font-size: 16px; }
     .btn { padding: 12px 25px; font-size: 18px; font-weight: bold; background: #2ECC71; color: white; border: none; border-radius: 25px; cursor: pointer; margin-top: 15px; }
     .btn:disabled { background: #ccc; cursor: not-allowed; }
-    .img-box { width: 100%; height: 230px; display: flex; justify-content: center; align-items: center; background: #fafafa; border-radius: 12px; border: 2px dashed #ccc; margin: 15px 0; overflow: hidden; padding: 10px; }
-    .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    
+    /* CROP BOX UNTUK ACTION-WORKSHEET.PNG */
+    .crop-container { width: 230px; height: 230px; margin: 15px auto; overflow: hidden; border-radius: 15px; border: 3px solid #3498DB; background: #fff; position: relative; }
+    .crop-container img { position: absolute; width: 680px; height: auto; }
+    
+    /* KEDUDUKAN SETIAP SOALAN 1 - 10 */
+    .pos-1  { top: -145px; left: -225px; }
+    .pos-2  { top: -145px; left: -430px; }
+    .pos-3  { top: -335px; left: -435px; }
+    .pos-4  { top: -525px; left: -430px; }
+    .pos-5  { top: -680px; left: -385px; }
+    .pos-6  { top: -580px; left: -225px; }
+    .pos-7  { top: -680px; left: -65px;  }
+    .pos-8  { top: -525px; left: -20px;  }
+    .pos-9  { top: -335px; left: -20px;  }
+    .pos-10 { top: -145px; left: -20px;  }
+
     .drop-zone { width: 80%; height: 50px; border: 3px dashed #3498DB; background: #EBF5FB; border-radius: 10px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; }
     .drop-zone.correct { background: #D4EDDA; border-color: #28A745; color: #155724; }
     .drop-zone.wrong { background: #F8D7DA; border-color: #DC3545; color: #721C24; }
@@ -32,7 +47,7 @@
   <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
   
   <h3>🎮 Action Verbs Quiz</h3>
-  <p style="color: #666; font-size: 14px;">Year 3 Unit 3: Action Verbs Worksheets</p>
+  <p style="color: #666; font-size: 14px;">Mind Mapping Action Verbs Worksheet</p>
   
   <input type="text" id="student-name" placeholder="Enter Full Name..." required>
   <input type="text" id="student-class" placeholder="Enter Class (e.g. 3 Cerdik)..." required>
@@ -44,11 +59,11 @@
 <div class="card hidden" id="quiz-screen">
   <h3 id="q-header">Question 1 / 10</h3>
   
-  <div class="img-box">
-    <img id="q-img" src="" alt="Action Verb Image">
+  <div class="crop-container">
+    <img id="q-img" src="action-worksheet.png" class="pos-1" alt="Worksheet Question">
   </div>
   
-  <p>Select or drag the correct action verb:</p>
+  <p>Select the correct action verb for this picture:</p>
   
   <div class="drop-zone" id="drop-zone" ondrop="handleDrop(event)" ondragover="allowDrop(event)">
     Drop/Tap answer here
@@ -69,19 +84,19 @@
 
 <script>
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTNkgKtHGSxey52910ebyG_3kMzGByUeqnGYDW5DLqq4inYeKPNU2fv0Xi8s3roKTamQ/exec";
-  const TOPIC_NAME = "Year 3 Unit 3: Action Verbs";
+  const TOPIC_NAME = "Mind Mapping Action Verbs";
 
   const questions = [
-    { num: 1, answer: "running", img: "https://img.icons8.com/color/240/running.png", options: ["running", "walking", "jumping"] },
-    { num: 2, answer: "swimming", img: "https://img.icons8.com/color/240/swimming.png", options: ["swimming", "singing", "sleeping"] },
-    { num: 3, answer: "dancing", img: "https://img.icons8.com/color/240/dancing.png", options: ["dancing", "singing", "jumping"] },
-    { num: 4, answer: "reading", img: "https://img.icons8.com/color/240/reading.png", options: ["writing", "reading", "eating"] },
-    { num: 5, answer: "playing basketball", img: "https://img.icons8.com/color/240/basketball.png", options: ["playing basketball", "playing football", "running"] },
-    { num: 6, answer: "singing", img: "https://img.icons8.com/color/240/singing.png", options: ["singing", "dancing", "reading"] },
-    { num: 7, answer: "drawing", img: "https://img.icons8.com/color/240/paint-palette.png", options: ["drawing", "writing", "reading"] },
-    { num: 8, answer: "sleeping", img: "https://img.icons8.com/color/240/sleeping-in-bed.png", options: ["sleeping", "eating", "walking"] },
-    { num: 9, answer: "jumping", img: "https://img.icons8.com/color/240/jumping.png", options: ["jumping", "running", "swimming"] },
-    { num: 10, answer: "eating", img: "https://img.icons8.com/color/240/restaurant-menu.png", options: ["eating", "reading", "singing"] }
+    { num: 1, answer: "run", posClass: "pos-1", options: ["run", "walk", "jump"] },
+    { num: 2, answer: "walk", posClass: "pos-2", options: ["walk", "run", "dance"] },
+    { num: 3, answer: "swim", posClass: "pos-3", options: ["swim", "sing", "sleep"] },
+    { num: 4, answer: "read", posClass: "pos-4", options: ["read", "write", "eat"] },
+    { num: 5, answer: "eat", posClass: "pos-5", options: ["eat", "read", "sleep"] },
+    { num: 6, answer: "write", posClass: "pos-6", options: ["write", "read", "draw"] },
+    { num: 7, answer: "jump", posClass: "pos-7", options: ["jump", "run", "walk"] },
+    { num: 8, answer: "sleep", posClass: "pos-8", options: ["sleep", "eat", "sing"] },
+    { num: 9, answer: "sing", posClass: "pos-9", options: ["sing", "dance", "read"] },
+    { num: 10, answer: "dance", posClass: "pos-10", options: ["dance", "sing", "jump"] }
   ];
 
   let currentIdx = 0;
@@ -108,8 +123,10 @@
     answered = false;
     const q = questions[currentIdx];
     document.getElementById("q-header").innerText = `Question ${currentIdx + 1} of ${questions.length}`;
-    document.getElementById("q-img").src = q.img;
     
+    const imgEl = document.getElementById("q-img");
+    imgEl.className = q.posClass;
+
     const zone = document.getElementById("drop-zone");
     zone.innerText = "Drop/Tap answer here";
     zone.className = "drop-zone";
@@ -136,7 +153,6 @@
   }
 
   function checkAnswer(userAnswer) {
-    // Elak mengira semula jika murid menekan butang jawapan berulang kali dalam soalan sama
     if (answered) return;
     answered = true;
 
@@ -151,7 +167,6 @@
       zone.className = "drop-zone wrong";
     }
 
-    // MEMBENARKAN SOALAN SETERUSNYA WALAUPUN JAWAPAN SALAH
     document.getElementById("next-btn").disabled = false;
   }
 
