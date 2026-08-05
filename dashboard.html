@@ -76,7 +76,7 @@
 </div>
 
 <script>
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTNkgKtHGSxey52910ebyG_3kMzGByUeqnGYDW5DLqq4inYeKPNU2fv0Xi8s3roKTamQ/exec";
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHHaFxsPJ95ENv5xSjgds_Ay6CeukUrb52RyInAjEnYJUU1FLJED6BWNQofn3MRBo32A/exec";
   let allRecords = [];
 
   function loadDashboardData() {
@@ -93,7 +93,7 @@
         allRecords = data.reverse();
         document.getElementById("total-students").innerText = allRecords.length;
         if(allRecords.length > 0) {
-          document.getElementById("top-topic").innerText = allRecords[0].topic || "-";
+          document.getElementById("top-topic").innerText = allRecords[0].topic || allRecords[0].Topic || "-";
         }
         renderTable(allRecords);
       })
@@ -104,15 +104,6 @@
         btn.innerText = "🔄 Refresh";
         btn.disabled = false;
       });
-  }
-
-  function cleanScore(rawScore) {
-    let str = String(rawScore || "").trim();
-    // Jika data yang masuk adalah format ISO Date/Masa, abaikan dan kembalikan markah laluan
-    if (str.includes("T") || str.includes("Z") || str.length > 20) {
-      return "-";
-    }
-    return str;
   }
 
   function formatDate(rawDate) {
@@ -131,11 +122,12 @@
     }
 
     records.forEach(r => {
-      const dateVal = formatDate(r.timestamp);
-      const nameVal = r.studentName || "-";
-      const classVal = r.className || "-";
-      const topicVal = r.topic || "-";
-      const scoreVal = cleanScore(r.score);
+      // Menyokong pelbagai format nama kunci daripada Google Apps Script / Sheet
+      const dateVal = formatDate(r.timestamp || r.Timestamp || r.date || r[0]);
+      const nameVal = r.studentName || r.StudentName || r.name || r.Name || r[1] || "-";
+      const classVal = r.className || r.ClassName || r.class || r.Class || r[2] || "-";
+      const topicVal = r.topic || r.Topic || r[3] || "-";
+      const scoreVal = r.score || r.Score || r[4] || "-";
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
@@ -152,9 +144,10 @@
   function filterData() {
     const query = document.getElementById("search-input").value.toLowerCase();
     const filtered = allRecords.filter(r => {
-      return String(r.studentName || "").toLowerCase().includes(query) || 
-             String(r.className || "").toLowerCase().includes(query) || 
-             String(r.topic || "").toLowerCase().includes(query);
+      const name = String(r.studentName || r.StudentName || r.name || "").toLowerCase();
+      const cls = String(r.className || r.ClassName || r.class || "").toLowerCase();
+      const tpc = String(r.topic || r.Topic || "").toLowerCase();
+      return name.includes(query) || cls.includes(query) || tpc.includes(query);
     });
     renderTable(filtered);
   }
