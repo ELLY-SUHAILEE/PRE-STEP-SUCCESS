@@ -10,7 +10,7 @@
     .card { background: #fff; width: 100%; max-width: 550px; border-radius: 20px; padding: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); text-align: center; border: 4px solid #3498DB; }
     .brand-title { color: #2C3E50; margin: 0; font-size: 26px; }
     .brand-tag { color: #E67E22; font-weight: bold; margin-top: 2px; font-size: 14px; }
-    input, select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ccc; border-radius: 8px; font-size: 16px; }
+    input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ccc; border-radius: 8px; font-size: 16px; }
     .btn { padding: 12px 25px; font-size: 18px; font-weight: bold; background: #2ECC71; color: white; border: none; border-radius: 25px; cursor: pointer; margin-top: 15px; }
     .btn:disabled { background: #ccc; cursor: not-allowed; }
     .img-box { width: 100%; height: 230px; display: flex; justify-content: center; align-items: center; background: #fafafa; border-radius: 12px; border: 2px dashed #ccc; margin: 15px 0; overflow: hidden; padding: 10px; }
@@ -19,7 +19,7 @@
     .drop-zone.correct { background: #D4EDDA; border-color: #28A745; color: #155724; }
     .drop-zone.wrong { background: #F8D7DA; border-color: #DC3545; color: #721C24; }
     .word-bank { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
-    .btn-word { padding: 10px 18px; background: #E67E22; color: white; border-radius: 20px; font-size: 16px; font-weight: bold; cursor: grab; user-select: none; }
+    .btn-word { padding: 10px 18px; background: #E67E22; color: white; border-radius: 20px; font-size: 16px; font-weight: bold; cursor: pointer; user-select: none; }
     .hidden { display: none; }
   </style>
 </head>
@@ -32,7 +32,7 @@
   <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
   
   <h3>🎮 Action Verbs Quiz</h3>
-  <p style="color: #666; font-size: 14px;">Get Smart Plus 3: Unit 3 (Right Now)</p>
+  <p style="color: #666; font-size: 14px;">Year 3 Unit 3: Action Verbs Worksheets</p>
   
   <input type="text" id="student-name" placeholder="Enter Full Name..." required>
   <input type="text" id="student-class" placeholder="Enter Class (e.g. 3 Cerdik)..." required>
@@ -48,10 +48,10 @@
     <img id="q-img" src="" alt="Action Verb Image">
   </div>
   
-  <p>Drag or tap the correct action verb:</p>
+  <p>Select or drag the correct action verb:</p>
   
   <div class="drop-zone" id="drop-zone" ondrop="handleDrop(event)" ondragover="allowDrop(event)">
-    Drop answer here
+    Drop/Tap answer here
   </div>
 
   <div class="word-bank" id="word-bank"></div>
@@ -63,7 +63,7 @@
 <div class="card hidden" id="result-screen">
   <h2>🎉 Well Done! 🎉</h2>
   <p id="result-message">Submitting your score to teacher's record...</p>
-  <h3 id="final-score">Score: 0 / 10</h3>
+  <h3 id="final-score">Score: 0 / 10 (0%)</h3>
   <button class="btn" onclick="location.reload()">Try Again 🔄</button>
 </div>
 
@@ -71,17 +71,18 @@
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTNkgKtHGSxey52910ebyG_3kMzGByUeqnGYDW5DLqq4inYeKPNU2fv0Xi8s3roKTamQ/exec";
   const TOPIC_NAME = "Year 3 Unit 3: Action Verbs";
 
+  // SET SOALAN ACTION VERBS WORKSEET BAHARU
   const questions = [
-    { num: 1, answer: "run", img: "https://img.icons8.com/color/240/running.png", options: ["run", "walk", "jump"] },
-    { num: 2, answer: "walk", img: "https://img.icons8.com/color/240/walking.png", options: ["run", "walk", "dance"] },
-    { num: 3, answer: "swim", img: "https://img.icons8.com/color/240/swimming.png", options: ["swim", "sing", "sleep"] },
-    { num: 4, answer: "read", img: "https://img.icons8.com/color/240/reading.png", options: ["write", "read", "eat"] },
-    { num: 5, answer: "eat", img: "https://img.icons8.com/color/240/restaurant-menu.png", options: ["eat", "read", "sing"] },
-    { num: 6, answer: "write", img: "https://img.icons8.com/color/240/writing.png", options: ["write", "read", "walk"] },
-    { num: 7, answer: "jump", img: "https://img.icons8.com/color/240/jumping.png", options: ["jump", "run", "swim"] },
-    { num: 8, answer: "sleep", img: "https://img.icons8.com/color/240/sleeping-in-bed.png", options: ["sleep", "dance", "eat"] },
-    { num: 9, answer: "sing", img: "https://img.icons8.com/color/240/singing.png", options: ["sing", "dance", "read"] },
-    { num: 10, answer: "dance", img: "https://img.icons8.com/color/240/dancing.png", options: ["dance", "sing", "jump"] }
+    { num: 1, answer: "running", img: "https://img.icons8.com/color/240/running.png", options: ["running", "walking", "jumping"] },
+    { num: 2, answer: "swimming", img: "https://img.icons8.com/color/240/swimming.png", options: ["swimming", "singing", "sleeping"] },
+    { num: 3, answer: "dancing", img: "https://img.icons8.com/color/240/dancing.png", options: ["dancing", "singing", "jumping"] },
+    { num: 4, answer: "reading", img: "https://img.icons8.com/color/240/reading.png", options: ["writing", "reading", "eating"] },
+    { num: 5, answer: "playing basketball", img: "https://img.icons8.com/color/240/basketball.png", options: ["playing basketball", "playing football", "running"] },
+    { num: 6, answer: "singing", img: "https://img.icons8.com/color/240/singing.png", options: ["singing", "dancing", "reading"] },
+    { num: 7, answer: "drawing", img: "https://img.icons8.com/color/240/paint-palette.png", options: ["drawing", "writing", "reading"] },
+    { num: 8, answer: "sleeping", img: "https://img.icons8.com/color/240/sleeping-in-bed.png", options: ["sleeping", "eating", "walking"] },
+    { num: 9, answer: "jumping", img: "https://img.icons8.com/color/240/jumping.png", options: ["jumping", "running", "swimming"] },
+    { num: 10, answer: "eating", img: "https://img.icons8.com/color/240/restaurant-menu.png", options: ["eating", "reading", "singing"] }
   ];
 
   let currentIdx = 0;
@@ -109,13 +110,13 @@
     document.getElementById("q-img").src = q.img;
     
     const zone = document.getElementById("drop-zone");
-    zone.innerText = "Drop answer here";
+    zone.innerText = "Drop/Tap answer here";
     zone.className = "drop-zone";
     document.getElementById("next-btn").disabled = true;
 
     const bank = document.getElementById("word-bank");
     bank.innerHTML = "";
-    q.options.sort(() => Math.random() - 0.5).forEach(word => {
+    [...q.options].sort(() => Math.random() - 0.5).forEach(word => {
       const el = document.createElement("div");
       el.innerText = word;
       el.className = "btn-word";
@@ -160,14 +161,17 @@
   function finishQuiz() {
     document.getElementById("quiz-screen").classList.add("hidden");
     document.getElementById("result-screen").classList.remove("hidden");
-    document.getElementById("final-score").innerText = `Your Score: ${score} / ${questions.length}`;
+    
+    const percentage = Math.round((score / questions.length) * 100);
+    const scoreFormatted = `${score}/${questions.length} (${percentage}%)`;
 
-    // HANTAR DATA DENGAN KEY SAMA SEPERTI DI GOOGLE SCRIPT
+    document.getElementById("final-score").innerText = `Score: ${scoreFormatted}`;
+
     const payload = {
       studentName: studentName,
       className: studentClass,
       topic: TOPIC_NAME,
-      score: `${score}/${questions.length}`
+      score: scoreFormatted
     };
 
     fetch(GOOGLE_SCRIPT_URL, {
