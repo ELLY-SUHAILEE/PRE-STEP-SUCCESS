@@ -54,8 +54,8 @@
       🔄 Refresh
     </button>
     
-    <a href="action.html" class="btn-action btn-home">
-      🏠 Home / Quiz
+    <a href="index.html" class="btn-action btn-home">
+      🏠 Home Menu
     </a>
   </div>
 
@@ -107,73 +107,28 @@
       });
   }
 
-  // Fungsi menukar markah (contoh: "8/10") kepada format dengan peratus (contoh: "8/10 (80%)")
-  function formatScoreWithPercentage(rawScore) {
-    if (!rawScore || rawScore === "-") return "-";
+  function cleanScore(scoreVal) {
+    if (!scoreVal) return "-";
+    let str = String(scoreVal).trim();
     
-    // Jika markah ada format '8/10'
-    if (typeof rawScore === 'string' && rawScore.includes('/')) {
-      const parts = rawScore.split('/');
-      const obtained = parseFloat(parts[0]);
-      const total = parseFloat(parts[1]);
-      
-      if (!isNaN(obtained) && !isNaN(total) && total > 0) {
-        const percentage = Math.round((obtained / total) * 100);
-        return `${obtained}/${total} (${percentage}%)`;
+    // Jika data mengandungi tanda '/' seperti '8/10'
+    if (str.includes('/')) {
+      const parts = str.split('/');
+      const num = parseFloat(parts[0]);
+      const den = parseFloat(parts[1]);
+      if (!isNaN(num) && !isNaN(den) && den > 0) {
+        const pct = Math.round((num / den) * 100);
+        return `${num}/${den} (${pct}%)`;
       }
     }
     
-    // Jika markah hanya nombor biasa
-    const num = parseFloat(rawScore);
-    if (!isNaN(num)) {
-      return `${num}%`;
+    // Jika data nombor peratus biasa
+    const val = parseFloat(str);
+    if (!isNaN(val)) {
+      return `${val}%`;
     }
 
-    return rawScore;
-  }
-
-  function parseRecord(r) {
-    const values = Object.values(r);
-    
-    let rawScore = "-";
-    let dateFormatted = "-";
-    let name = "-";
-    let cls = "-";
-    let topic = "-";
-
-    // 1. Cari Markah
-    for (let v of values) {
-      if (typeof v === 'string' && v.includes('/') && !v.includes('T') && !v.includes('-') && v.length < 8) {
-        rawScore = v;
-        break;
-      }
-    }
-
-    // 2. Cari Tarikh
-    for (let v of values) {
-      if (typeof v === 'string' && (v.includes('T') || v.includes('-')) && v.length > 10) {
-        const d = new Date(v);
-        if (!isNaN(d.getTime())) {
-          dateFormatted = d.toLocaleString("en-GB");
-          break;
-        }
-      }
-    }
-
-    if (rawScore === "-") rawScore = r.score || r.Score || values[4] || "-";
-    if (dateFormatted === "-") {
-      const rawDate = r.timestamp || r.Timestamp || values[0] || "";
-      const d = new Date(rawDate);
-      dateFormatted = !isNaN(d.getTime()) ? d.toLocaleString("en-GB") : (rawDate || "-");
-    }
-
-    name = r.studentName || r.studentname || r.StudentName || r["Student Name"] || values[1] || "-";
-    cls = r.className || r.classname || r.ClassName || r.Class || values[2] || "-";
-    topic = r.topic || r.Topic || values[3] || "-";
-
-    const scoreWithPercent = formatScoreWithPercentage(rawScore);
-
-    return { dateFormatted, name, cls, topic, scoreWithPercent };
+    return str;
   }
 
   function renderTable(records) {
@@ -186,15 +141,28 @@
     }
 
     records.forEach(r => {
-      const item = parseRecord(r);
+      // Ambil nilai mengikut kunci atau indeks
+      const vals = Object.values(r);
+      
+      const rawDate = r.timestamp || r.Timestamp || r.dateTime || vals[0] || "";
+      let dateFormatted = "-";
+      if(rawDate) {
+        const d = new Date(rawDate);
+        dateFormatted = !isNaN(d.getTime()) ? d.toLocaleString("en-GB") : rawDate;
+      }
+
+      const name = r.studentName || r.studentname || r.StudentName || vals[1] || "-";
+      const cls = r.className || r.classname || r.Class || vals[2] || "-";
+      const topic = r.topic || r.Topic || vals[3] || "-";
+      const score = cleanScore(r.score || r.Score || vals[4]);
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${item.dateFormatted}</td>
-        <td><b>${item.name}</b></td>
-        <td>${item.cls}</td>
-        <td>${item.topic}</td>
-        <td><span class="badge-score">${item.scoreWithPercent}</span></td>
+        <td>${dateFormatted}</td>
+        <td><b>${name}</b></td>
+        <td>${cls}</td>
+        <td>${topic}</td>
+        <td><span class="badge-score">${score}</span></td>
       `;
       tbody.appendChild(tr);
     });
@@ -203,10 +171,11 @@
   function filterData() {
     const query = document.getElementById("search-input").value.toLowerCase();
     const filtered = allRecords.filter(r => {
-      const item = parseRecord(r);
-      return item.name.toLowerCase().includes(query) || 
-             item.cls.toLowerCase().includes(query) || 
-             item.topic.toLowerCase().includes(query);
+      const vals = Object.values(r);
+      const name = String(r.studentName || r.studentname || vals[1] || "").toLowerCase();
+      const cls = String(r.className || r.classname || vals[2] || "").toLowerCase();
+      const topic = String(r.topic || r.Topic || vals[3] || "").toLowerCase();
+      return name.includes(query) || cls.includes(query) || topic.includes(query);
     });
     renderTable(filtered);
   }
