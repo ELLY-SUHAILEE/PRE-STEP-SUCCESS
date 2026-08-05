@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PE-STEPS SUCCESS - Teacher Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .header-box { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #eee; }
+    .brand-title { color: #2C3E50; margin: 0; font-size: 28px; letter-spacing: 1px; }
+    .brand-tag { color: #E67E22; font-weight: bold; margin-top: 5px; font-size: 14px; }
+    .stats { display: flex; gap: 15px; margin-bottom: 20px; justify-content: space-between; }
+    .stat-card { flex: 1; background: #ebf5fb; padding: 15px; border-radius: 8px; text-align: center; border-left: 5px solid #3498db; }
+    .stat-card h3 { margin: 0; font-size: 28px; color: #2980b9; }
+    .stat-card p { margin: 5px 0 0; color: #555; font-size: 14px; }
+    .filter-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+    th { background: #3498db; color: white; }
+    tr:nth-child(even) { background: #f9f9f9; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header-box">
+    <h2 class="brand-title">🚀 PE-STEPS SUCCESS</h2>
+    <div class="brand-tag">Teacher's Quiz Record & Analytics Dashboard</div>
+  </div>
+  
+  <div class="stats">
+    <div class="stat-card">
+      <h3 id="total-students">0</h3>
+      <p>Total Quiz Attempts</p>
+    </div>
+    <div class="stat-card">
+      <h3 id="top-topic">-</h3>
+      <p>Latest Topic Active</p>
+    </div>
+  </div>
+
+  <div class="filter-box">
+    <input type="text" id="search-input" onkeyup="filterData()" placeholder="Search Student Name, Class, or Topic...">
+    <button onclick="loadDashboardData()" style="padding: 10px 20px; background: #2ecc71; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Refresh 🔄</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date & Time</th>
+        <th>Student Name</th>
+        <th>Class</th>
+        <th>Topic</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody id="data-table">
+      <tr><td colspan="5" style="text-align:center;">Loading records...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTNkgKtHGSxey52910ebyG_3kMzGByUeqnGYDW5DLqq4inYeKPNU2fv0Xi8s3roKTamQ/exec";
+  let allRecords = [];
+
+  function loadDashboardData() {
+    fetch(GOOGLE_SCRIPT_URL)
+      .then(res => res.json())
+      .then(data => {
+        allRecords = data.reverse();
+        document.getElementById("total-students").innerText = allRecords.length;
+        if(allRecords.length > 0) {
+          document.getElementById("top-topic").innerText = allRecords[0].topic || "-";
+        }
+        renderTable(allRecords);
+      })
+      .catch(err => {
+        document.getElementById("data-table").innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load records from Google Sheet.</td></tr>`;
+      });
+  }
+
+  function renderTable(records) {
+    const tbody = document.getElementById("data-table");
+    tbody.innerHTML = "";
+
+    if (records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No student records found yet.</td></tr>`;
+      return;
+    }
+
+    records.forEach(r => {
+      const dateFormatted = r.timestamp ? new Date(r.timestamp).toLocaleString("en-GB") : "-";
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${dateFormatted}</td>
+        <td><b>${r.studentname || "-"}</b></td>
+        <td>${r.classname || "-"}</td>
+        <td>${r.topic || "-"}</td>
+        <td><span style="background:#d4edda; padding:4px 8px; border-radius:4px; font-weight:bold; color:#155724;">${r.score || "-"}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function filterData() {
+    const query = document.getElementById("search-input").value.toLowerCase();
+    const filtered = allRecords.filter(r => 
+      (r.studentname && r.studentname.toLowerCase().includes(query)) ||
+      (r.classname && r.classname.toLowerCase().includes(query)) ||
+      (r.topic && r.topic.toLowerCase().includes(query))
+    );
+    renderTable(filtered);
+  }
+
+  loadDashboardData();
+</script>
+</body>
+</html>
