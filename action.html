@@ -71,7 +71,6 @@
   const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTNkgKtHGSxey52910ebyG_3kMzGByUeqnGYDW5DLqq4inYeKPNU2fv0Xi8s3roKTamQ/exec";
   const TOPIC_NAME = "Year 3 Unit 3: Action Verbs";
 
-  // SET SOALAN ACTION VERBS WORKSEET BAHARU
   const questions = [
     { num: 1, answer: "running", img: "https://img.icons8.com/color/240/running.png", options: ["running", "walking", "jumping"] },
     { num: 2, answer: "swimming", img: "https://img.icons8.com/color/240/swimming.png", options: ["swimming", "singing", "sleeping"] },
@@ -89,6 +88,7 @@
   let score = 0;
   let studentName = "";
   let studentClass = "";
+  let answered = false;
 
   function startQuiz() {
     studentName = document.getElementById("student-name").value.trim();
@@ -105,6 +105,7 @@
   }
 
   function loadQuestion() {
+    answered = false;
     const q = questions[currentIdx];
     document.getElementById("q-header").innerText = `Question ${currentIdx + 1} of ${questions.length}`;
     document.getElementById("q-img").src = q.img;
@@ -135,18 +136,23 @@
   }
 
   function checkAnswer(userAnswer) {
+    // Elak mengira semula jika murid menekan butang jawapan berulang kali dalam soalan sama
+    if (answered) return;
+    answered = true;
+
     const q = questions[currentIdx];
     const zone = document.getElementById("drop-zone");
     zone.innerText = userAnswer;
 
     if (userAnswer === q.answer) {
       zone.className = "drop-zone correct";
-      document.getElementById("next-btn").disabled = false;
       score++;
     } else {
       zone.className = "drop-zone wrong";
-      document.getElementById("next-btn").disabled = true;
     }
+
+    // MEMBENARKAN SOALAN SETERUSNYA WALAUPUN JAWAPAN SALAH
+    document.getElementById("next-btn").disabled = false;
   }
 
   function nextQuestion() {
