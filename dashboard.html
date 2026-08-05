@@ -49,12 +49,10 @@
   <div class="filter-box">
     <input type="text" id="search-input" onkeyup="filterData()" placeholder="Search Student Name, Class, or Topic...">
     
-    <!-- BUTANG REFRESH -->
     <button onclick="loadDashboardData()" class="btn-action btn-refresh" id="refresh-btn">
       🔄 Refresh
     </button>
     
-    <!-- BUTANG HOME -->
     <a href="action.html" class="btn-action btn-home">
       🏠 Home / Quiz
     </a>
@@ -84,7 +82,6 @@
     const btn = document.getElementById("refresh-btn");
     const tbody = document.getElementById("data-table");
     
-    // Tukar status butang & jadual semasa memuatkan data
     btn.innerText = "⏳ Loading...";
     btn.disabled = true;
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Refreshing records from Google Sheet...</td></tr>`;
@@ -95,7 +92,8 @@
         allRecords = data.reverse();
         document.getElementById("total-students").innerText = allRecords.length;
         if(allRecords.length > 0) {
-          document.getElementById("top-topic").innerText = allRecords[0].topic || allRecords[0].Topic || "-";
+          const first = allRecords[0];
+          document.getElementById("top-topic").innerText = first.topic || first.Topic || extractVal(first, "topic") || "-";
         }
         renderTable(allRecords);
       })
@@ -103,10 +101,53 @@
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load records from Google Sheet.</td></tr>`;
       })
       .finally(() => {
-        // Kembalikan teks butang Refresh
         btn.innerText = "🔄 Refresh";
         btn.disabled = false;
       });
+  }
+
+  // Fungsi pintar untuk mengesan nilai mengikut bentuk data (Markah / Tarikh / Nama)
+  function parseRecord(r) {
+    const values = Object.values(r);
+    
+    let score = "-";
+    let dateFormatted = "-";
+    let name = "-";
+    let cls = "-";
+    let topic = "-";
+
+    // 1. Cari Markah (Cari sebarang nilai yang ada tanda '/' seperti '10/10' atau nombor)
+    for (let v of values) {
+      if (typeof v === 'string' && v.includes('/') && !v.includes('T') && !v.includes('-') && v.length < 8) {
+        score = v;
+        break;
+      }
+    }
+
+    // 2. Cari Tarikh (Cari nilai bersimbol 'T' atau format ISO)
+    for (let v of values) {
+      if (typeof v === 'string' && (v.includes('T') || v.includes('-')) && v.length > 10) {
+        const d = new Date(v);
+        if (!isNaN(d.getTime())) {
+          dateFormatted = d.toLocaleString("en-GB");
+          break;
+        }
+      }
+    }
+
+    // Jika gagal mengesan secara automatik, guna pembacaan nama kunci biasa
+    if (score === "-") score = r.score || r.Score || values[4] || "-";
+    if (dateFormatted === "-") {
+      const rawDate = r.timestamp || r.Timestamp || values[0] || "";
+      const d = new Date(rawDate);
+      dateFormatted = !isNaN(d.getTime()) ? d.toLocaleString("en-GB") : (rawDate || "-");
+    }
+
+    name = r.studentName || r.studentname || r.StudentName || r["Student Name"] || values[1] || "-";
+    cls = r.className || r.classname || r.ClassName || r.Class || values[2] || "-";
+    topic = r.topic || r.Topic || values[3] || "-";
+
+    return { dateFormatted, name, cls, topic, score };
   }
 
   function renderTable(records) {
@@ -119,26 +160,15 @@
     }
 
     records.forEach(r => {
-      const rawDate = r.timestamp || r.Timestamp || r.dateTime || r.Date || "";
-      let dateFormatted = "-";
-      
-      if(rawDate) {
-        const d = new Date(rawDate);
-        dateFormatted = !isNaN(d.getTime()) ? d.toLocaleString("en-GB") : rawDate;
-      }
-
-      const name = r.studentname || r.studentName || r.StudentName || r["Student Name"] || "-";
-      const cls = r.classname || r.className || r.ClassName || r.Class || "-";
-      const topic = r.topic || r.Topic || "-";
-      const score = r.score || r.Score || "-";
+      const item = parseRecord(r);
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${dateFormatted}</td>
-        <td><b>${name}</b></td>
-        <td>${cls}</td>
-        <td>${topic}</td>
-        <td><span style="background:#d4edda; padding:6px 12px; border-radius:12px; font-weight:bold; color:#155724; border: 1px solid #c3e6cb;">${score}</span></td>
+        <td>${item.dateFormatted}</td>
+        <td><b>${item.name}</b></td>
+        <td>${item.cls}</td>
+        <td>${item.topic}</td>
+        <td><span style="background:#d4edda; padding:6px 12px; border-radius:12px; font-weight:bold; color:#155724; border: 1px solid #c3e6cb;">${item.score}</span></td>
       `;
       tbody.appendChild(tr);
     });
@@ -147,15 +177,14 @@
   function filterData() {
     const query = document.getElementById("search-input").value.toLowerCase();
     const filtered = allRecords.filter(r => {
-      const name = (r.studentname || r.studentName || r.StudentName || "").toLowerCase();
-      const cls = (r.classname || r.className || r.Class || "").toLowerCase();
-      const topic = (r.topic || r.Topic || "").toLowerCase();
-      return name.includes(query) || cls.includes(query) || topic.includes(query);
+      const item = parseRecord(r);
+      return item.name.toLowerCase().includes(query) || 
+             item.cls.toLowerCase().includes(query) || 
+             item.topic.toLowerCase().includes(query);
     });
     renderTable(filtered);
   }
 
-  // Muat data automatik semasa mula buka halaman
   loadDashboardData();
 </script>
 </body>
