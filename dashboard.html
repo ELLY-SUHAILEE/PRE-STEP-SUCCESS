@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PE-STEPS SUCCESS - Teacher Dashboard</title>
+  <title>PRE-STEP SUCCESS - Teacher Dashboard</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
     .container { max-width: 1000px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -26,7 +26,7 @@
 
 <div class="container">
   <div class="header-box">
-    <h2 class="brand-title">🚀 PE-STEPS SUCCESS</h2>
+    <h2 class="brand-title">🚀 PRE-STEP SUCCESS</h2>
     <div class="brand-tag">Teacher's Quiz Record & Analytics Dashboard</div>
   </div>
   
@@ -73,7 +73,7 @@
         allRecords = data.reverse();
         document.getElementById("total-students").innerText = allRecords.length;
         if(allRecords.length > 0) {
-          document.getElementById("top-topic").innerText = allRecords[0].topic || "-";
+          document.getElementById("top-topic").innerText = allRecords[0].topic || allRecords[0].Topic || "-";
         }
         renderTable(allRecords);
       })
@@ -92,14 +92,27 @@
     }
 
     records.forEach(r => {
-      const dateFormatted = r.timestamp ? new Date(r.timestamp).toLocaleString("en-GB") : "-";
+      // Mengesan variasi nama kunci yang diberikan oleh AppScript
+      const rawDate = r.timestamp || r.Timestamp || r.dateTime || r.Date || "";
+      let dateFormatted = "-";
+      
+      if(rawDate) {
+        const d = new Date(rawDate);
+        dateFormatted = !isNaN(d.getTime()) ? d.toLocaleString("en-GB") : rawDate;
+      }
+
+      const name = r.studentname || r.studentName || r.StudentName || r["Student Name"] || "-";
+      const cls = r.classname || r.className || r.ClassName || r.Class || "-";
+      const topic = r.topic || r.Topic || "-";
+      const score = r.score || r.Score || "-";
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${dateFormatted}</td>
-        <td><b>${r.studentname || "-"}</b></td>
-        <td>${r.classname || "-"}</td>
-        <td>${r.topic || "-"}</td>
-        <td><span style="background:#d4edda; padding:4px 8px; border-radius:4px; font-weight:bold; color:#155724;">${r.score || "-"}</span></td>
+        <td><b>${name}</b></td>
+        <td>${cls}</td>
+        <td>${topic}</td>
+        <td><span style="background:#d4edda; padding:6px 12px; border-radius:12px; font-weight:bold; color:#155724; border: 1px solid #c3e6cb;">${score}</span></td>
       `;
       tbody.appendChild(tr);
     });
@@ -107,11 +120,12 @@
 
   function filterData() {
     const query = document.getElementById("search-input").value.toLowerCase();
-    const filtered = allRecords.filter(r => 
-      (r.studentname && r.studentname.toLowerCase().includes(query)) ||
-      (r.classname && r.classname.toLowerCase().includes(query)) ||
-      (r.topic && r.topic.toLowerCase().includes(query))
-    );
+    const filtered = allRecords.filter(r => {
+      const name = (r.studentname || r.studentName || r.StudentName || "").toLowerCase();
+      const cls = (r.classname || r.className || r.Class || "").toLowerCase();
+      const topic = (r.topic || r.Topic || "").toLowerCase();
+      return name.includes(query) || cls.includes(query) || topic.includes(query);
+    });
     renderTable(filtered);
   }
 
