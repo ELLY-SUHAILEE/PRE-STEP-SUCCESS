@@ -93,13 +93,12 @@
         allRecords = data.reverse();
         document.getElementById("total-students").innerText = allRecords.length;
         if(allRecords.length > 0) {
-          const first = allRecords[0];
-          document.getElementById("top-topic").innerText = first.topic || first.Topic || "-";
+          document.getElementById("top-topic").innerText = allRecords[0].topic || "-";
         }
         renderTable(allRecords);
       })
       .catch(err => {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load records from Google Sheet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load records. Please check Google Apps Script deployment.</td></tr>`;
       })
       .finally(() => {
         btn.innerText = "🔄 Refresh";
@@ -107,63 +106,19 @@
       });
   }
 
-  // PENGECAM DATA PINTAR: Memastikan tarikh/tahun tidak dibaca sebagai score
-  function extractCorrectData(row) {
-    const vals = Object.values(row).map(v => String(v).trim());
-
-    let dateVal = "-";
-    let nameVal = "-";
-    let classVal = "-";
-    let topicVal = "-";
-    let scoreVal = "-";
-
-    // 1. Mengesan Tarikh
-    for (let v of vals) {
-      if (v.includes("T") || (v.includes("-") && v.length >= 10) || (v.includes("/") && v.length > 10)) {
-        const d = new Date(v);
-        if (!isNaN(d.getTime())) {
-          dateVal = d.toLocaleString("en-GB");
-          break;
-        }
-      }
+  function cleanScore(rawScore) {
+    let str = String(rawScore || "").trim();
+    // Jika data yang masuk adalah format ISO Date/Masa, abaikan dan kembalikan markah laluan
+    if (str.includes("T") || str.includes("Z") || str.length > 20) {
+      return "-";
     }
+    return str;
+  }
 
-    // 2. Mengesan Score sebenar (Format x/10 atau peratus %)
-    for (let v of vals) {
-      if (v.includes("/") && v.length <= 15 && !v.includes("T") && !v.includes("-")) {
-        scoreVal = v;
-        break;
-      }
-      if (v.includes("%") && !v.includes("2026")) {
-        scoreVal = v;
-        break;
-      }
-    }
-
-    // Backup jika menggunakan kunci khusus dari Google Apps Script
-    if (scoreVal === "-") scoreVal = row.score || row.Score || "-";
-    if (dateVal === "-") {
-      const rawD = row.timestamp || row.Timestamp || vals[0] || "";
-      const d = new Date(rawD);
-      dateVal = !isNaN(d.getTime()) ? d.toLocaleString("en-GB") : rawD;
-    }
-
-    nameVal = row.studentName || row.studentname || row.StudentName || vals[1] || "-";
-    classVal = row.className || row.classname || row.Class || vals[2] || "-";
-    topicVal = row.topic || row.Topic || vals[3] || "-";
-
-    // Format kan Score jika belum ada %
-    if (scoreVal !== "-" && scoreVal.includes("/") && !scoreVal.includes("%")) {
-      const parts = scoreVal.split("/");
-      const num = parseFloat(parts[0]);
-      const den = parseFloat(parts[1]);
-      if (!isNaN(num) && !isNaN(den) && den > 0) {
-        const pct = Math.round((num / den) * 100);
-        scoreVal = `${num}/${den} (${pct}%)`;
-      }
-    }
-
-    return { dateVal, nameVal, classVal, topicVal, scoreVal };
+  function formatDate(rawDate) {
+    if (!rawDate) return "-";
+    const d = new Date(rawDate);
+    return !isNaN(d.getTime()) ? d.toLocaleString("en-GB") : String(rawDate);
   }
 
   function renderTable(records) {
@@ -176,15 +131,19 @@
     }
 
     records.forEach(r => {
-      const item = extractCorrectData(r);
+      const dateVal = formatDate(r.timestamp);
+      const nameVal = r.studentName || "-";
+      const classVal = r.className || "-";
+      const topicVal = r.topic || "-";
+      const scoreVal = cleanScore(r.score);
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${item.dateVal}</td>
-        <td><b>${item.nameVal}</b></td>
-        <td>${item.classVal}</td>
-        <td>${item.topicVal}</td>
-        <td><span class="badge-score">${item.scoreVal}</span></td>
+        <td>${dateVal}</td>
+        <td><b>${nameVal}</b></td>
+        <td>${classVal}</td>
+        <td>${topicVal}</td>
+        <td><span class="badge-score">${scoreVal}</span></td>
       `;
       tbody.appendChild(tr);
     });
@@ -193,10 +152,9 @@
   function filterData() {
     const query = document.getElementById("search-input").value.toLowerCase();
     const filtered = allRecords.filter(r => {
-      const item = extractCorrectData(r);
-      return item.nameVal.toLowerCase().includes(query) || 
-             item.classVal.toLowerCase().includes(query) || 
-             item.topicVal.toLowerCase().includes(query);
+      return String(r.studentName || "").toLowerCase().includes(query) || 
+             String(r.className || "").toLowerCase().includes(query) || 
+             String(r.topic || "").toLowerCase().includes(query);
     });
     renderTable(filtered);
   }
