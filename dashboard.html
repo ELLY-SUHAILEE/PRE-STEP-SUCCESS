@@ -14,8 +14,13 @@
     .stat-card { flex: 1; background: #ebf5fb; padding: 15px; border-radius: 8px; text-align: center; border-left: 5px solid #3498db; }
     .stat-card h3 { margin: 0; font-size: 28px; color: #2980b9; }
     .stat-card p { margin: 5px 0 0; color: #555; font-size: 14px; }
-    .filter-box { display: flex; gap: 10px; margin-bottom: 20px; }
+    .filter-box { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
     input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; }
+    .btn-action { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; font-size: 14px; }
+    .btn-refresh { background: #2ecc71; }
+    .btn-refresh:hover { background: #27ae60; }
+    .btn-home { background: #3498db; }
+    .btn-home:hover { background: #2980b9; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
     th { background: #3498db; color: white; }
@@ -43,7 +48,16 @@
 
   <div class="filter-box">
     <input type="text" id="search-input" onkeyup="filterData()" placeholder="Search Student Name, Class, or Topic...">
-    <button onclick="loadDashboardData()" style="padding: 10px 20px; background: #2ecc71; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Refresh 🔄</button>
+    
+    <!-- BUTANG REFRESH -->
+    <button onclick="loadDashboardData()" class="btn-action btn-refresh" id="refresh-btn">
+      🔄 Refresh
+    </button>
+    
+    <!-- BUTANG HOME -->
+    <a href="action.html" class="btn-action btn-home">
+      🏠 Home / Quiz
+    </a>
   </div>
 
   <table>
@@ -67,6 +81,14 @@
   let allRecords = [];
 
   function loadDashboardData() {
+    const btn = document.getElementById("refresh-btn");
+    const tbody = document.getElementById("data-table");
+    
+    // Tukar status butang & jadual semasa memuatkan data
+    btn.innerText = "⏳ Loading...";
+    btn.disabled = true;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Refreshing records from Google Sheet...</td></tr>`;
+
     fetch(GOOGLE_SCRIPT_URL)
       .then(res => res.json())
       .then(data => {
@@ -78,7 +100,12 @@
         renderTable(allRecords);
       })
       .catch(err => {
-        document.getElementById("data-table").innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load records from Google Sheet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Failed to load records from Google Sheet.</td></tr>`;
+      })
+      .finally(() => {
+        // Kembalikan teks butang Refresh
+        btn.innerText = "🔄 Refresh";
+        btn.disabled = false;
       });
   }
 
@@ -92,7 +119,6 @@
     }
 
     records.forEach(r => {
-      // Mengesan variasi nama kunci yang diberikan oleh AppScript
       const rawDate = r.timestamp || r.Timestamp || r.dateTime || r.Date || "";
       let dateFormatted = "-";
       
@@ -129,6 +155,7 @@
     renderTable(filtered);
   }
 
+  // Muat data automatik semasa mula buka halaman
   loadDashboardData();
 </script>
 </body>
